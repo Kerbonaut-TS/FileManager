@@ -12,10 +12,10 @@ public class Iterator {
     String[] fileinfo  = new String [3];
 
 
-    public void loop_on_files(String subroutine, String method, String input_folder) throws IOException,Exception{
+    public void loop_on_files(String subroutine, String method, String dirpath) throws IOException,Exception{
     	
 
-        file_list = fm.getFiles(input_folder, false);
+        file_list = fm.getFiles(dirpath, false);
         int countFiles = 0;
 
         for (File f : file_list) {
@@ -32,7 +32,7 @@ public class Iterator {
 
         }//end for each file
 
-        System.out.println("Processed "+countFiles+" files in folder "+input_folder);
+        System.out.println("Processed "+countFiles+" files in folder "+dirpath);
 
     }
 	
@@ -49,7 +49,7 @@ public class Iterator {
             // Create an instance of the class (if needed)
             Object instance = myClass.getDeclaredConstructor().newInstance();
             // Invoke the method on the instance
-            Object result = method.invoke(instance,  new Object[] {filepath});
+            Object result = method.invoke(instance,  new Object[] {args});
 
             return result;
 		
