@@ -1,11 +1,15 @@
 package Tools;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -20,29 +24,32 @@ import com.drew.metadata.Tag;
 public class FileManager {
 	
 	
-	String path ="";
+	String dirpath ="";
 	Boolean scanned = false;
 	int filecount = 0;
 	File[] files= null;
     List<String> dirs = new ArrayList<>();
 
 	
-	public FileManager() {
-
+	public FileManager() {		
 	
 	
 	}
 	
-	public File [] getFiles(String targetDir, Boolean recursive) {
+	//LISTING /COUNTING
+	
+	public File [] getFiles(String targetDir, Boolean recursive) throws IOException{
+		
+		  /* get a list of all files in the target directory  (Optional recursive: and subDirectories) */
 		  
-		  this.path = targetDir;
+		  this.dirpath = targetDir;
 		
 		
 		  //get list of files
 		  File dir = new File(targetDir);
+		  
 		  File[] fileList = dir.listFiles();
-		  File[] checklist = null;
-		  checklist = fileList.clone();
+		  File[] checklist = fileList.clone();
 
 		 if(recursive) {
 			 			 
@@ -60,89 +67,121 @@ public class FileManager {
 		  this.scanned = true;
 		  this.files = this.removeDirectories(fileList);
 		  
+
+		  
 		  return this.files;
 		
 	}//end getFileList
 	
 	public List<String> getDirs(){
-		
+	
+		if(!scanned) System.out.print("Error. Call getFiles() first");	
 		return this.dirs;
 	}
 	
 	public int countFiles() {
 		
-		if (scanned) {
-			
-			return this.filecount;
-			
-		}else {
-			
-			this.getFiles(this.path, false);
-			return this.filecount;
-		}
+		
+		if(!scanned) System.out.print("Error. Call getFiles() first");		
+		return this.filecount;
 		
 		
 	}
 	
-	public void moveFile  (File file, String destination, Boolean notADrill, Boolean subfolders) {
+	
+	// MOVING FILES
+	
+	public void summon(String destination, String method)   throws IOException{
 		
-		String[] f_bits = new String[3];
-		f_bits = this.splitPath(file);
+		Path[]  sources = new Path[files.length];;
+		Path[]  destinations = new Path[files.length];;
 		
-		String finaldestination;
-		
-		if(subfolders) {
-			finaldestination= destination+"\\"+f_bits[3];
-		}else {
-			finaldestination = destination;
+		for (int i= 0; i<this.files.length; i++) {
+			
+			sources[i] =  Paths.get(files[i].getAbsolutePath());
+			destinations[i] = Paths.get(destination+"//"+ files[i].getName());
+			
 		}
 		
-		File newDir = new File(finaldestination);
-		if (!newDir.exists()){
-			newDir.mkdirs();
-		}
-		
-		
-		try{
+		if(method.contains("copy")) {
 			
-			if(notADrill)
-				Runtime.getRuntime().exec("cmd /C MOVE \""+f_bits[0]+"\""+" \""+finaldestination+"\\"+f_bits[2]+"."+f_bits[3]+"\""); 
-			else
-				System.out.println("cmd /C MOVE \""+f_bits[0]+"\""+" \""+finaldestination+"\\"+f_bits[2]+"."+f_bits[3]+"\"");
-				
-			
-		}catch(Exception e) {e.printStackTrace();}
+			this.copyFiles(sources, destinations);
 
-		
-	}
-	
-	public void copyFile (File file, String destination, Boolean notADrill) {
-		
-		String[] f_bits = new String[3];
-		f_bits = this.splitPath(file);
-		
-		String finaldestination = destination+"\\"+f_bits[3].toUpperCase();
-		
-		File newDir = new File(finaldestination);
-		if (!newDir.exists()){
-			newDir.mkdirs();
+			
+			
+		}else if (method.contains("move")) {
+			
+			this.moveFiles(sources, destinations);
+
+			
 		}
 		
 		
-		try{
+		
+	}
+	
+	public void sort(String by)   throws IOException{
+		
+		Path[]  sources = new Path[files.length];
+		Path[]  destinations = new Path[files.length];
+		
+		for (int i= 0; i<this.files.length; i++) {
 			
-			if(notADrill)
-				Runtime.getRuntime().exec("cmd /C COPY \""+f_bits[0]+"\""+" \""+finaldestination+"\\"+f_bits[2]+"_o."+f_bits[3]+"\""); 
-			else
-				System.out.println("cmd /C COPY \""+f_bits[0]+"\""+" \""+finaldestination+"\\"+f_bits[2]+"."+f_bits[3]+"\"");
-				
+			sources[i] =  Paths.get(files[i].getAbsolutePath());		
 			
-		}catch(Exception e) {e.printStackTrace();}
-
+			String root = sources[i].getParent().toString();
+			String subdir = this.splitPath(sources[i]).get(by).toString();
+			String filename = sources[i].getFileName().toString();
+			
+			destinations[i] = Paths.get(root+"//"+subdir+"//"+filename);
+			
+		}
+		
+		
+		this.moveFiles(sources, destinations);
+		
 		
 		
 	}
 	
+	public void moveFiles(Path[] sources, Path[] destinations) throws IOException {
+		
+	    if (sources.length != destinations.length) {
+	        throw new IllegalArgumentException("Source and destination arrays must have the same length.");
+	    }
+
+	    for (int i = 0; i < sources.length; i++) {
+	        File newDir = new File(destinations[i].toString());
+
+	        if (!newDir.exists()) {
+	            newDir.mkdirs();
+	        }
+	        
+	        System.out.println("Moving "+sources[i]+"    to   "+ destinations[i]);
+	        Files.move(sources[i], destinations[i], StandardCopyOption.REPLACE_EXISTING);
+	    }
+	}
+	
+	public void copyFiles(Path[] sources, Path[] destinations) throws IOException {
+		
+	    if (sources.length != destinations.length) {
+	        throw new IllegalArgumentException("Source and destination arrays must have the same length.");
+	    }
+
+	    for (int i = 0; i < sources.length; i++) {
+	        File newDir = new File(destinations[i].toString());
+
+	        if (!newDir.exists()) {
+	            newDir.mkdirs();
+	        }
+
+	        Files.copy(sources[i], destinations[i], StandardCopyOption.REPLACE_EXISTING);
+	    }
+	}
+		
+	
+	// METADATA
+
 	public String  getExifTag(File file, String s) {
 		
 		try{ Metadata metadata = ImageMetadataReader.readMetadata(file.getAbsoluteFile());
@@ -187,6 +226,8 @@ public class FileManager {
 		
 	}
 		
+	//COMPARISONS
+
 	public boolean areRelated (String[] fbit1, String[] fbit2, String type) {
 
 		//file bits have names in position 2
@@ -220,6 +261,10 @@ public class FileManager {
 		
 	}
 	
+	
+	//UTILITIES
+	
+	
 	private File[] removeDirectories(File[] fileList) {
 		
 		int dir_count,i;
@@ -248,34 +293,55 @@ public class FileManager {
 		
 	}
 	
-	public String[] splitPath (File child) {
-		 
-		String [] output = new String[4];
-		 
-		 if (child.isDirectory()){
+	
+	public String[] asArray(File f) {
+		
+		Dictionary file_dict = this.splitPath(f);
+		
+		String[] array = new String[4];
+		
+		array[0] =  file_dict.get("parent").toString();
+		array[1] =  file_dict.get("name").toString();
+		array[2] = 	file_dict.get("extension").toString();
+		array[3] = 	file_dict.get("filename").toString();
+		
+		return array;
+	}
+	
+	public Dictionary splitPath(Path p) {return this.splitPath(p.toFile()); }
+	
+	public Dictionary splitPath (File f) {
+		
+		Dictionary file_dict = new Hashtable();
+
+				 
+		 if (f.isDirectory()){
 			 return null;
 		 }else {
-			 //all
-			 output[0] = child.getAbsolutePath();
-			 //path
-			 output[1] = child.getParentFile().getAbsolutePath()+"\\";
-			 //extension
-			 output[3] = child.getName().substring(child.getName().length()-3,child.getName().length());
-			 //filename
-			 output[2] = child.getName().substring(0,child.getName().length()-4);	
+			 file_dict.put("abs.path", f.getAbsolutePath());
+			 
+			 file_dict.put("parent",  f.getParentFile().getAbsolutePath());
+			 
+			 String filename = f.getName();
+			 file_dict.put("filename", filename);
+			 
+			 //filename breakdown
+			 int dot = filename.indexOf(".");
+			 int underscore = filename.indexOf("_");
+			 int end = filename.length();
+			 
+			 file_dict.put("name", filename.substring(0, dot));
+			 if(underscore >0 ) file_dict.put("version:", filename.substring(0, underscore));
+			 file_dict.put("extension", filename.substring(dot+1));
+
 			 
 		 }
 		 
-		 return output;
+		 return file_dict;
 
 		}//end splitPath
 	
-	private String getFilepath(String filepath) {
 
-	    File theFile = new File(filepath);
-	    return theFile.getParent();
-	    
-	}
 		
 	public static void printLoadingBar(int percentage) {
 	        System.out.print("Progress: [" + String.format("%3d", percentage) + "%] [");
