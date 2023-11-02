@@ -36,6 +36,14 @@ public class FileManager {
 	
 	}
 	
+	public FileManager(File [] files) {
+		
+		this.scanned = true;
+		this.files = this.removeDirectories(files);
+		
+		
+	}
+	
 	//LISTING /COUNTING
 	
 	public File [] getFiles(String targetDir, Boolean recursive) throws IOException{
