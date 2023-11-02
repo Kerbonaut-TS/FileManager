@@ -1,4 +1,4 @@
-package subroutines;
+package Subroutines;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class ImageProcessing {
     
     
     
-    public Boolean  exportTiles(String[] fileinfo) throws IOException  {
+    public Boolean  exportTiles(String[] args) throws IOException  {
     	
     	
     	  //#####  REPLACE HERE THE PREPROCESSING SCRIPT   (EDA output)
@@ -28,7 +28,7 @@ public class ImageProcessing {
         StatFilter f2= new StatFilter();
 
 
-        f1.setSource(fileinfo[0]);
+        f1.setSource(args[0]);
 
         BufferedImage img = f1.applyOperation("log");
         f2.setImage(img);
@@ -36,7 +36,7 @@ public class ImageProcessing {
         int[] sorted = f2.sortTilesBy("mean", false);
         int[] top_six_tiles = Arrays.copyOfRange(sorted, 0, 6);
 
-        String outpath = fileinfo[1] +"\\tiles\\"+fileinfo[2]+".png";
+        String outpath = args[1] +"\\tiles\\"+args[2]+".png";
         f2.saveTiles(outpath, top_six_tiles);
     	
     	
