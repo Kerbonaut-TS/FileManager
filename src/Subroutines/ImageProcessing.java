@@ -1,8 +1,9 @@
 package Subroutines;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+
 import filters.StatFilter;
 
 public class ImageProcessing {
@@ -25,22 +26,22 @@ public class ImageProcessing {
     	  //#####  REPLACE HERE THE PREPROCESSING SCRIPT   (EDA output)
         
         StatFilter f1= new StatFilter();
-        StatFilter f2= new StatFilter();
-
-
-        f1.setSource(args[0]);
-
-        BufferedImage img = f1.applyOperation("log");
-        f2.setImage(img);
-        f2.createTiles(7,7);
-        int[] sorted = f2.sortTilesBy("mean", false);
-        int[] top_six_tiles = Arrays.copyOfRange(sorted, 0, 6);
 
         String outpath = args[1] +"\\tiles\\"+args[2]+".png";
-        f2.saveTiles(outpath, top_six_tiles);
-    	
-    	
-    	
+        
+        File file = new File(outpath);
+        
+        if (!file.exists()) {
+	        
+	        f1.setSource(args[0]);
+	
+	        BufferedImage cropped_img = f1.findTile("mean", "max", "175x175", 30);
+	        f1.setImage(cropped_img);
+	        f1.applyOperation("log");
+	        f1.showImage();
+	        f1.saveTiles(outpath);
+	
+        }
     	
     	return true;
     	
