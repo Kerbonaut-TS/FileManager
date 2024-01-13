@@ -1,4 +1,6 @@
-package Tools;
+package javaTools;
+
+import com.sun.source.tree.NewArrayTree;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,31 +11,56 @@ public class Iterator {
 	
 
     FileManager fm;
-    File[] file_list;
-    String[] fileinfo  = null;
+    String method;
+    String subroutine;
+
+    public void set_method(String method){
+
+        this.method = method;
+
+    }
+
+    public void set_subroutine(String subroutine){
+
+        this.subroutine = subroutine;
+
+    }
+
+    private String[] add_argument(String new_item, String[] args){
+
+        String[] all_args = new String[args.length+1];
+        all_args[0] = new_item;
+
+        for(int i=0; i<args.length; i++) all_args[i+1] = args[i];
+
+        return all_args;
+
+    }
 
 
-    public void loop_on_files(String subroutine, String method, String dirpath) throws IOException,Exception{
+
+    public void loop_on_files(String directory, String[] args) throws IOException,Exception{
     	
     	fm = new FileManager();
-        file_list = fm.getFiles(dirpath, false);
+        File [] file_list = fm.getFiles(directory, false);
         int countFiles = 0;
 
         for (File f : file_list) {
-            // 0- fullpath , 1-folderpath, 2-filename, 3-extension
-            fileinfo = fm.asArray(f);
-        	
+
+             String[] method_args = this.add_argument(f.getAbsolutePath(), args);
+
             //run this method
-        	this.run_method(subroutine, method, fileinfo);
+        	this.run_method(this.subroutine, this.method, method_args);
 
+            //update progressbar
             countFiles++;
-
             int progress = Math.round(((float) countFiles/(float) file_list.length )*100);
             fm.printLoadingBar(progress);
 
         }//end for each file
 
-        System.out.println("Processed "+countFiles+" files in folder "+dirpath);
+
+        System.out.println("Processed "+countFiles+" files in folder "+args[0]);
 
     }
 	
