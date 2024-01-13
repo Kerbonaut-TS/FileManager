@@ -1,4 +1,4 @@
-package Tools;
+package javaTools;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +34,14 @@ public class FileManager {
 	public FileManager() {		
 	
 	
+	}
+	
+	public FileManager(File [] files) {
+		
+		this.scanned = true;
+		this.files = this.removeDirectories(files);
+		
+		
 	}
 	
 	//LISTING /COUNTING
@@ -294,38 +302,44 @@ public class FileManager {
 	}
 	
 	
+	public String[] asArray(String fp) {
+		
+		File f = new File(fp);	
+		return this.asArray(f);
+	}
+	
 	public String[] asArray(File f) {
 		
-		Dictionary file_dict = this.splitPath(f);
+		Dictionary <String,String> file_dict = this.splitPath(f);
 		
-		String[] array = new String[4];
+		String[] array = new String[5];
 		
-		array[0] =  file_dict.get("parent").toString();
-		array[1] =  file_dict.get("name").toString();
-		array[2] = 	file_dict.get("extension").toString();
-		array[3] = 	file_dict.get("filename").toString();
+		array[0] =  file_dict.get("abspath").toString();
+		array[1] =  file_dict.get("parent").toString();
 		
+		 if (!f.isDirectory()){
+			array[2] =  file_dict.get("name").toString();
+			array[3] = 	file_dict.get("extension").toString();
+			array[4] = 	file_dict.get("filename").toString();
+		 }
 		return array;
 	}
 	
-	public Dictionary splitPath(Path p) {return this.splitPath(p.toFile()); }
+	public Dictionary <String,String> splitPath(Path p) {return this.splitPath(p.toFile()); }
 	
-	public Dictionary splitPath (File f) {
+	public Dictionary<String,String> splitPath (File f) {
 		
-		Dictionary file_dict = new Hashtable();
+		Dictionary <String,String> file_dict = new Hashtable<String,String>() ;
+		file_dict.put("abspath", f.getAbsolutePath());
+		file_dict.put("parent",  f.getParentFile().getAbsolutePath());
 
 				 
-		 if (f.isDirectory()){
-			 return null;
-		 }else {
-			 file_dict.put("abs.path", f.getAbsolutePath());
-			 
-			 file_dict.put("parent",  f.getParentFile().getAbsolutePath());
-			 
+		 if (!f.isDirectory()){
+
+			 //filename breakdown
 			 String filename = f.getName();
 			 file_dict.put("filename", filename);
 			 
-			 //filename breakdown
 			 int dot = filename.indexOf(".");
 			 int underscore = filename.indexOf("_");
 			 int end = filename.length();
