@@ -3,49 +3,28 @@ package Subroutines;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import com.sun.source.tree.NewArrayTree;
 import filters.StatFilter;
+import filters.Tile;
+import com.babelcoding.*;
+import javaTools.FileManager;
 
 public class ImageProcessing {
 	
 	
-    public Boolean unit_test(String filepath) {
-        
-    	
-    	System.out.println(filepath);
-    	
-    	return true;
-    	
-    }
-    
-    
-    
-    public Boolean  exportTiles(String[] args) throws IOException  {
-    	
-    	
-    	  //#####  REPLACE HERE THE PREPROCESSING SCRIPT   (EDA output)
-        
-        StatFilter f1= new StatFilter();
+    public Boolean unit_test(String[] args) {
 
-        String outpath = args[1] +"\\tiles\\"+args[2]+".png";
-        
-        File file = new File(outpath);
-        
-        if (!file.exists()) {
-	        
-	        f1.setSource(args[0]);
-	
-	        BufferedImage cropped_img = f1.findTile("mean", "max", "175x175", 30);
-	        f1.setImage(cropped_img);
-	        f1.applyOperation("log");
-	        f1.showImage();
-	        f1.saveTiles(outpath);
-	
+    	System.out.println(" Executing method on file "+args[0]);
+        for (int i=1; i<args.length; i++) {
+            System.out.println(" Custom argument #"+i + " : "+args[i]);
         }
-    	
-    	return true;
+
+        return true;
     	
     }
-	
+    
 
 }
