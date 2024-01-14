@@ -1,24 +1,29 @@
 
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
-import Subroutines.ImageProcessing;
-import javaTools.FileManager;
 import javaTools.Iterator;
 
 public class Main {
 
 	public static void main(String[] args) throws IOException, ParseException, Exception {
 
-
-		String[] arguments = {"hello", "world!"};
-
+		//args[0] reserved to Subroutine class_name
+		//args[1] reserved to method_name
+		//args[2] reserved to directory
 		Iterator it = new Iterator();
-		it.set_subroutine("ImageProcessing");
-		it.set_method("unit_test");
+		Boolean recursive = false;
 
-		it.loop_on_files("\\path\\to\\folder", arguments);
+		it.set_subroutine(args[0]);
+		it.set_method(args[1]);
+		it.set_directory(args[2]);
+
+		//method custom arguments
+		String[] custom_args = new String[args.length];
+		for(int i =3; i<args.length; i++) custom_args[i] = args[i];
+
+
+		it.loop_on_files(custom_args, recursive);
 		
 		        
 	    }//end MAIN

@@ -1,11 +1,10 @@
 package javaTools;
 
-import com.sun.source.tree.NewArrayTree;
+//import com.sun.source.tree.NewArrayTree;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Dictionary;
 
 public class Iterator {
 	
@@ -13,6 +12,7 @@ public class Iterator {
     FileManager fm;
     String method;
     String subroutine;
+    File directory;
 
     public void set_method(String method){
 
@@ -26,28 +26,23 @@ public class Iterator {
 
     }
 
-    private String[] add_argument(String new_item, String[] args){
+    public void set_directory(String directory){
 
-        String[] all_args = new String[args.length+1];
-        all_args[0] = new_item;
-
-        for(int i=0; i<args.length; i++) all_args[i+1] = args[i];
-
-        return all_args;
+        this.directory = new File(directory);
 
     }
 
 
 
-    public void loop_on_files(String directory, String[] args) throws IOException,Exception{
+    public void loop_on_files( String[] args, Boolean recursive) throws IOException,Exception{
     	
     	fm = new FileManager();
-        File [] file_list = fm.getFiles(directory, false);
+        File [] file_list = fm.getFiles(this.directory.getAbsolutePath(), recursive);
         int countFiles = 0;
 
         for (File f : file_list) {
 
-             String[] method_args = this.add_argument(f.getAbsolutePath(), args);
+             String[] method_args = this.append_argument(f.getAbsolutePath(), args);
 
             //run this method
         	this.run_method(this.subroutine, this.method, method_args);
@@ -67,7 +62,8 @@ public class Iterator {
 	
 	
 	private Object run_method(String classname, String methodname, String[] args ) throws Exception {
-		
+
+		    //args[0] will contain the current filepath
 		
             // The class in which the method is defined
             Class<?> myClass = Class.forName("Subroutines."+classname);
@@ -76,25 +72,31 @@ public class Iterator {
 
             // Create an instance of the class (if needed)
             Object instance = myClass.getDeclaredConstructor().newInstance();
+
             // Invoke the method on the instance
             Object result = method.invoke(instance,  new Object[] {args});
 
             return result;
 		
-	} 
-	
+	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+    private String[] append_argument(String new_item, String[] args){
+
+        //appends current filepath as args[0]
+
+        String[] all_args = new String[args.length+1];
+        all_args[0] = new_item;
+
+        for(int i=0; i<args.length; i++) all_args[i+1] = args[i];
+
+        return all_args;
+
+    }
+
+
+
+
+
 
 }
