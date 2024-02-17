@@ -22,47 +22,47 @@ import com.drew.metadata.Tag;
 
 
 public class FileManager {
-	
-	
+
+
 	String dirpath ="";
 	Boolean scanned = false;
 	int filecount = 0;
 	File[] files= null;
     List<String> dirs = new ArrayList<>();
 
-	
+
 	public FileManager() {		
 	
 	
 	}
-	
+
 	public FileManager(File [] files) {
-		
+
 		this.scanned = true;
 		this.files = this.removeDirectories(files);
-		
-		
+
+
 	}
-	
+
 	//LISTING /COUNTING
-	
+
 	public File [] getFiles(String targetDir, Boolean recursive) throws IOException{
-		
+
 		  /* get a list of all files in the target directory  (Optional recursive: and subDirectories) */
-		  
+
 		  this.dirpath = targetDir;
-		
+
 		
 		  //get list of files
 		  File dir = new File(targetDir);
-		  
+
 		  File[] fileList = dir.listFiles();
 		  File[] checklist = fileList.clone();
 
 		 if(recursive) {
-			 			 
+
 			  //scan for subfolders and go recursive
-			  		  
+
 			  if (checklist != null) {
 			    for (File child : checklist) {
 			    	if(child.isDirectory()) 
@@ -99,15 +99,15 @@ public class FileManager {
 	
 	// MOVING FILES
 	
-	public void summon(String destination, String method)   throws IOException{
+	public void summon_all(String destination, String method)   throws IOException{
 		
-		Path[]  sources = new Path[files.length];;
-		Path[]  destinations = new Path[files.length];;
+		List<Path>  sources = new ArrayList<>();
+		List<Path>  destinations = new ArrayList<>();
 		
 		for (int i= 0; i<this.files.length; i++) {
 			
-			sources[i] =  Paths.get(files[i].getAbsolutePath());
-			destinations[i] = Paths.get(destination+"//"+ files[i].getName());
+			sources.add(Paths.get(files[i].getAbsolutePath()));
+			destinations.add(Paths.get(destination+"//"+ files[i].getName()));
 			
 		}
 		
@@ -116,160 +116,54 @@ public class FileManager {
 			this.copyFiles(sources, destinations);
 
 			
-			
 		}else if (method.contains("move")) {
 			
 			this.moveFiles(sources, destinations);
 
-			
 		}
-		
-		
 		
 	}
 	
-	public void sort(String by)   throws IOException{
+
+	public void moveFiles(List<Path> sources, List<Path> destinations) throws IOException {
 		
-		Path[]  sources = new Path[files.length];
-		Path[]  destinations = new Path[files.length];
-		
-		for (int i= 0; i<this.files.length; i++) {
-			
-			sources[i] =  Paths.get(files[i].getAbsolutePath());		
-			
-			String root = sources[i].getParent().toString();
-			String subdir = this.splitPath(sources[i]).get(by).toString();
-			String filename = sources[i].getFileName().toString();
-			
-			destinations[i] = Paths.get(root+"//"+subdir+"//"+filename);
-			
-		}
-		
-		
-		this.moveFiles(sources, destinations);
-		
-		
-		
-	}
-	
-	public void moveFiles(Path[] sources, Path[] destinations) throws IOException {
-		
-	    if (sources.length != destinations.length) {
+	    if (sources.size() != destinations.size()) {
 	        throw new IllegalArgumentException("Source and destination arrays must have the same length.");
 	    }
 
-	    for (int i = 0; i < sources.length; i++) {
-	        File newDir = new File(destinations[i].toString());
+	    for (int i = 0; i < sources.size(); i++) {
+
+	        File newDir = new File(destinations.get(i).toString());
 
 	        if (!newDir.exists()) {
 	            newDir.mkdirs();
 	        }
 	        
-	        System.out.println("Moving "+sources[i]+"    to   "+ destinations[i]);
-	        Files.move(sources[i], destinations[i], StandardCopyOption.REPLACE_EXISTING);
+	        System.out.println("Moving "+sources.get(i)+"    to   "+ destinations.get(i));
+	        Files.move(sources.get(i), destinations.get(i), StandardCopyOption.REPLACE_EXISTING);
 	    }
 	}
 	
-	public void copyFiles(Path[] sources, Path[] destinations) throws IOException {
+	public void copyFiles(List<Path> sources, List<Path> destinations) throws IOException {
 		
-	    if (sources.length != destinations.length) {
+	    if (sources.size() != destinations.size()) {
 	        throw new IllegalArgumentException("Source and destination arrays must have the same length.");
 	    }
 
-	    for (int i = 0; i < sources.length; i++) {
-	        File newDir = new File(destinations[i].toString());
+	    for (int i = 0; i < sources.size(); i++) {
+
+			File newDir = new File(destinations.get(i).toString());
 
 	        if (!newDir.exists()) {
 	            newDir.mkdirs();
 	        }
 
-	        Files.copy(sources[i], destinations[i], StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("Coping.." + sources.get(i)+" >> " + destinations.get(i));
+			Files.copy(sources.get(i), destinations.get(i), StandardCopyOption.REPLACE_EXISTING);
 	    }
 	}
-		
-	
-	// METADATA
 
-	public String  getExifTag(File file, String s) {
-		
-		try{ Metadata metadata = ImageMetadataReader.readMetadata(file.getAbsoluteFile());
-		for (Directory directory : metadata.getDirectories()) {
-		    for (Tag tag : directory.getTags()) {
-		        
-		    	if(tag.getTagName().equals(s)) return  tag.getDescription();
 
-		    }//for each tag
-		    
-		
-		   /* //error handling
-		    if (directory.hasErrors()) {
-		        for (String error : directory.getErrors()) {
-		            System.err.format("ERROR: %s", error);
-		        }//end for
-		    }*/
-		    
-		}//for each dir
-		
-		
-		
-		} catch (Throwable e) {e.printStackTrace();} 
-		
-		return null;
-
-	}//end method
-	
-	public double  getFileSize (File file) {
-		
-		try {
-		Path path = Paths.get(file.getAbsolutePath());
-		
-	     long bytes = Files.size(path);
-         //System.out.println(String.format("%,d bytes", bytes));
-         
-		return (double) bytes;
-		
-		}catch(Exception e) {e.printStackTrace();}
-		
-		return 0;
-		
-	}
-		
-	//COMPARISONS
-
-	public boolean areRelated (String[] fbit1, String[] fbit2, String type) {
-
-		//file bits have names in position 2
-		
-	   if(type.equals("name"))
-		   return (fbit1[2].contains(fbit2[2]) || fbit2[2].contains(fbit1[2]) ) ?  true : false;
-	   
-	   if(type.equals("time")) {
-		   
-		   File f1 = new File(fbit1[0]);
-		   File f2 = new File(fbit2[0]);
-		   
-		   String dateTaken1 = this.getExifTag(f1, "Date/Time Original");
-		   String dateTaken2 = this.getExifTag(f2, "Date/Time Original");
-		   
-		   if(dateTaken1!=null && dateTaken2!=null) {
-			   return (dateTaken1.equals(dateTaken2) || dateTaken2.equals(dateTaken1) ) ?  true : false;
-		   }else {return false;}
-		   
-	   }else {
-		   
-		   System.out.println("Error: Please set type as name or time");
-		   return false;
-		      
-		   
-	   }
-	   
-	   
-	   
-		  
-		
-	}
-	
-	
 	//UTILITIES
 	
 	
@@ -296,9 +190,8 @@ public class FileManager {
 		
 		this.filecount = newList.length;
 	    		
-		return newList;		
-		
-		
+		return newList;
+
 	}
 	
 	

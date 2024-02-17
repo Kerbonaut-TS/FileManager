@@ -2,7 +2,7 @@
 
 import java.io.IOException;
 import java.text.ParseException;
-import javaTools.Iterator;
+import javaTools.FileIterator;
 
 public class Main {
 
@@ -11,7 +11,7 @@ public class Main {
 		//args[0] reserved to Subroutine class_name
 		//args[1] reserved to method_name
 		//args[2] reserved to directory
-		Iterator it = new Iterator();
+		FileIterator it = new FileIterator();
 		Boolean recursive = false;
 
 		it.set_subroutine(args[0]);

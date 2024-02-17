@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-public class Iterator {
+public class FileIterator {
 	
 
     FileManager fm;
